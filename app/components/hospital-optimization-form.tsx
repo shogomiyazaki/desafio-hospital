@@ -1,13 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
+import { Button } from "../components/ui/button"
+import { Input } from "../components/ui/input"
+import { Label } from "../components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { Calculator, FileText, TrendingUp, Send } from "lucide-react"
-import { ResultsDashboard } from "@/components/results-dashboard"
+import { ResultsDashboard } from "../components/results-dashboard"
+import { submitQuestionario } from "@/lib/api"
+import { calculateIndicators, convertFormDataToHospitalData, type CalculationResults } from "@/lib/hospital-calculations"
 
 interface QuestionarioData {
   taxa_diaria_entradas_ps: number
@@ -263,7 +265,7 @@ const initialFormData: QuestionarioData = {
 
 export function HospitalOptimizationForm() {
   const [activeTab, setActiveTab] = useState("input")
-  const [results, setResults] = useState<any>(null)
+  const [results, setResults] = useState<CalculationResults | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState<QuestionarioData>(initialFormData)
@@ -280,23 +282,33 @@ export function HospitalOptimizationForm() {
       setLoading(true)
       setError(null)
 
-      const response = await fetch("http://167.234.238.26:5000/api/questionario", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      })
+      console.log("Enviando questionário:", formData)
+      
+      const result = await submitQuestionario(formData)
 
-      if (!response.ok) {
-        throw new Error(`Erro na requisição: ${response.statusText}`)
+      console.log("Resultado recebido:", result)
+
+      if (!result.success) {
+        const errorMsg = result.error || "Erro ao enviar dados"
+        console.error("Erro na resposta:", errorMsg)
+        setError(errorMsg)
+        return
       }
 
-      const data = await response.json()
-      setResults(data)
+      console.log("Questionário enviado com sucesso:", result.data)
+      
+      // Calcula os indicadores baseado nos dados do formulário
+      const hospitalData = convertFormDataToHospitalData(formData)
+      const calculationResults = calculateIndicators(hospitalData)
+      
+      console.log("Cálculos realizados:", calculationResults)
+      
+      setResults(calculationResults)
       setActiveTab("results")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao enviar dados")
+      const errorMsg = err instanceof Error ? err.message : "Erro ao enviar dados"
+      console.error("Exceção capturada:", errorMsg)
+      setError(errorMsg)
     } finally {
       setLoading(false)
     }
@@ -956,70 +968,50 @@ export function HospitalOptimizationForm() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Dados Horários - Média de Pacientes</CardTitle>
+            <CardTitle>Dados Horários - Média de Pacientes e Staff</CardTitle>
             <CardDescription>Por hora do dia (00:00-23:00)</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-4">
+          <CardContent className="space-y-4">
             {Array.from({ length: 24 }, (_, i) => {
-              const hour = `media_pacientes_h${String(i).padStart(2, "0")}` as keyof QuestionarioData
+              const hourPacientes = `media_pacientes_h${String(i).padStart(2, "0")}` as keyof QuestionarioData
+              const hourTriagem = `media_staff_triagem_h${String(i).padStart(2, "0")}` as keyof QuestionarioData
+              const hourConsultorio = `media_staff_consultorio_h${String(i).padStart(2, "0")}` as keyof QuestionarioData
+              
               return (
-                <div key={hour} className="space-y-2">
-                  <Label htmlFor={hour}>{String(i).padStart(2, "0")}:00</Label>
-                  <Input
-                    id={hour}
-                    type="number"
-                    value={formData[hour] || ""}
-                    onChange={(e) => handleInputChange(hour, e.target.value)}
-                    placeholder="0"
-                  />
-                </div>
-              )
-            })}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Dados Horários - Staff Triagem</CardTitle>
-            <CardDescription>Por hora do dia (00:00-23:00)</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-4">
-            {Array.from({ length: 24 }, (_, i) => {
-              const hour = `media_staff_triagem_h${String(i).padStart(2, "0")}` as keyof QuestionarioData
-              return (
-                <div key={hour} className="space-y-2">
-                  <Label htmlFor={hour}>{String(i).padStart(2, "0")}:00</Label>
-                  <Input
-                    id={hour}
-                    type="number"
-                    value={formData[hour] || ""}
-                    onChange={(e) => handleInputChange(hour, e.target.value)}
-                    placeholder="0"
-                  />
-                </div>
-              )
-            })}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Dados Horários - Staff Consultório</CardTitle>
-            <CardDescription>Por hora do dia (00:00-23:00)</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-4">
-            {Array.from({ length: 24 }, (_, i) => {
-              const hour = `media_staff_consultorio_h${String(i).padStart(2, "0")}` as keyof QuestionarioData
-              return (
-                <div key={hour} className="space-y-2">
-                  <Label htmlFor={hour}>{String(i).padStart(2, "0")}:00</Label>
-                  <Input
-                    id={hour}
-                    type="number"
-                    value={formData[hour] || ""}
-                    onChange={(e) => handleInputChange(hour, e.target.value)}
-                    placeholder="0"
-                  />
+                <div key={i} className="grid gap-4 md:grid-cols-4 items-end pb-2 border-b">
+                  <div className="space-y-2">
+                    <Label className="font-semibold">{String(i).padStart(2, "0")}:00</Label>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={hourPacientes}>Média Pacientes</Label>
+                    <Input
+                      id={hourPacientes}
+                      type="number"
+                      value={formData[hourPacientes] || ""}
+                      onChange={(e) => handleInputChange(hourPacientes, e.target.value)}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={hourTriagem}>Staff Triagem</Label>
+                    <Input
+                      id={hourTriagem}
+                      type="number"
+                      value={formData[hourTriagem] || ""}
+                      onChange={(e) => handleInputChange(hourTriagem, e.target.value)}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={hourConsultorio}>Staff Consultório</Label>
+                    <Input
+                      id={hourConsultorio}
+                      type="number"
+                      value={formData[hourConsultorio] || ""}
+                      onChange={(e) => handleInputChange(hourConsultorio, e.target.value)}
+                      placeholder="0"
+                    />
+                  </div>
                 </div>
               )
             })}
@@ -1036,16 +1028,7 @@ export function HospitalOptimizationForm() {
 
       <TabsContent value="results">
         {results && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Resultados da Análise</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <pre className="bg-gray-100 p-4 rounded overflow-auto max-h-96">
-                {JSON.stringify(results, null, 2)}
-              </pre>
-            </CardContent>
-          </Card>
+          <ResultsDashboard results={results} formData={convertFormDataToHospitalData(formData)} />
         )}
       </TabsContent>
     </Tabs>

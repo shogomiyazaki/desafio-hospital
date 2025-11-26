@@ -1,8 +1,8 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
+import { Badge } from "../components/ui/badge"
+import { Progress } from "../components/ui/progress"
 import { AlertCircle, CheckCircle2, TrendingUp, Bed, Clock, Activity } from "lucide-react"
 import type { CalculationResults, HospitalData } from "@/lib/hospital-calculations"
 
