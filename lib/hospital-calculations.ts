@@ -192,4 +192,51 @@ export interface HospitalData {
       capacidadeAtualUTI,
     }
   }
+
+  /**
+   * Converte os dados do formulário (formato API) para o formato esperado pela função de cálculo
+   */
+  export function convertFormDataToHospitalData(formData: any): HospitalData {
+    return {
+      // Pronto-Socorro
+      taxaEntradaPS: formData.taxa_diaria_entradas_ps || 0,
+      taxaEntradaAmbulancia: formData.taxa_diaria_entradas_ambulancia || 0,
+      taxaConversaoInternacao: 0.15, // valor padrão
+    
+      // Observação
+      leitosObservacao: formData.total_leitos_observacao || 0,
+      tmpObservacao: formData.tempo_medio_permanencia_observacao_dias || 0,
+    
+      // Internações Clínicas (PS)
+      internacoesClinicasPS: formData.internacoes_clinicas_dia || 0,
+      tmpEnfermariaClinicaPS: formData.tempo_medio_permanencia_internado_dia || 0,
+    
+      // Internações Cirúrgicas (PS)
+      internacoesCirurgicasPS: 0, // não está no formulário
+      tmpEnfermariaCirurgicaPS: 0, // não está no formulário
+    
+      // UTI (PS)
+      internacoesUTIPS: formData.internacoes_uti_dia || 0,
+      tmpUTIPS: formData.tempo_medio_permanencia_uti_dias || 0,
+    
+      // Bloco Cirúrgico
+      salasCirurgicasEletivas: formData.salas_procedimentos_eletivos || 0,
+      salasCirurgicasUrgencia: formData.salas_urgencia || 0,
+    
+      // RPA
+      unidadesRPA: formData.total_unidades_rpa || 0,
+      tmpRPA: formData.tempo_medio_permanencia_rpa_horas || 0,
+    
+      // Eletivas
+      internacoesClinicasEletivas: 0, // não está no formulário
+      internacoesCirurgicasEletivas: formData.internacoes_cirurgicas_eletivas || 0,
+      tmpClinicaEletiva: 0, // não está no formulário
+      tmpCirurgicaEletiva: formData.tmp_cirurgica_eletiva_dias || 0,
+    
+      // Financeiro e Tempo
+      ticketMedioPS: formData.ticket_medio_ps_reais || 0,
+      losSemInternacao: formData.los_sem_internacao_horas || 0,
+      losComInternacao: formData.los_com_internacao_horas || 0,
+    }
+  }
   

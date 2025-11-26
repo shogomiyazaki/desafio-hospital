@@ -1,4 +1,4 @@
-import { HospitalOptimizationForm } from "@/components/hospital-optimization-form"
+import { HospitalOptimizationForm } from "../components/hospital-optimization-form"
 import { Activity } from "lucide-react"
 
 export default function Home() {
