@@ -122,4 +122,25 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Prevenir mudança de valor em inputs numéricos com scroll do mouse */
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+  
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  /* Forçar desabilitar scroll change */
+  input[type="number"]:focus {
+    -moz-appearance: textfield;
+  }
+  
+  input[type="number"]::-webkit-inner-spin-button:focus,
+  input[type="number"]::-webkit-outer-spin-button:focus {
+    display: none;
+  }
 }
