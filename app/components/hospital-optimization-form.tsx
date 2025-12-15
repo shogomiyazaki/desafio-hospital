@@ -322,6 +322,7 @@ export function HospitalOptimizationForm() {
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [formData, setFormData] = useState<QuestionarioData>(initialFormData)
+  const [skipAutoSave, setSkipAutoSave] = useState(false)
 
   // Carregar dados salvos do localStorage ao montar o componente
   useEffect(() => {
@@ -339,13 +340,34 @@ export function HospitalOptimizationForm() {
     }
   }, [])
 
+  // Prevenir mudança de valor em inputs numéricos com scroll do mouse
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      const target = e.target as HTMLElement
+      if (target instanceof HTMLInputElement && target.type === 'number' && document.activeElement === target) {
+        e.preventDefault()
+        e.stopImmediatePropagation()
+      }
+    }
+
+    // Adicionar listener no documento
+    document.addEventListener('wheel', handleWheel, { passive: false, capture: true })
+    
+    return () => {
+      document.removeEventListener('wheel', handleWheel, { capture: true })
+    }
+  }, [])
+
   // Salvar dados automaticamente quando o email ou formData mudar
   useEffect(() => {
-    if (formData.preenchedor_email) {
-      localStorage.setItem("hospital_form_email", formData.preenchedor_email)
-      localStorage.setItem(`hospital_form_${formData.preenchedor_email}`, JSON.stringify(formData))
+    // Não salvar se acabamos de fazer submit ou se não tem email
+    if (skipAutoSave || !formData.preenchedor_email) {
+      return
     }
-  }, [formData])
+    
+    localStorage.setItem("hospital_form_email", formData.preenchedor_email)
+    localStorage.setItem(`hospital_form_${formData.preenchedor_email}`, JSON.stringify(formData))
+  }, [formData, skipAutoSave])
 
   const handleInputChange = (field: keyof QuestionarioData, value: string) => {
     setFormData((prev: QuestionarioData) => ({
@@ -390,14 +412,26 @@ export function HospitalOptimizationForm() {
 
       console.log("Questionário enviado com sucesso:", result.data)
       
+      // Ativar flag para pular auto-save durante a limpeza
+      setSkipAutoSave(true)
+      
       // Limpar o formulário após envio bem-sucedido
+      const emailToRemove = formData.preenchedor_email
       setFormData(initialFormData)
+      
+      // Limpar localStorage
       localStorage.removeItem("hospital_form_email")
-      if (formData.preenchedor_email) {
-        localStorage.removeItem(`hospital_form_${formData.preenchedor_email}`)
+      if (emailToRemove) {
+        localStorage.removeItem(`hospital_form_${emailToRemove}`)
       }
       
       setSuccessMessage("Questionário enviado com sucesso!")
+      
+      // Desativar flag após um tempo para permitir novo preenchimento
+      setTimeout(() => {
+        setSkipAutoSave(false)
+      }, 1000)
+      
       setTimeout(() => setSuccessMessage(null), 5000)
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Erro ao enviar dados"
