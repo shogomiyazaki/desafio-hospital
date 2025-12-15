@@ -1,55 +1,68 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
 import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
-import { Calculator, FileText, TrendingUp, Send } from "lucide-react"
-import { ResultsDashboard } from "../components/results-dashboard"
+import { Send, Save, Hospital, Mail, MapPin } from "lucide-react"
 import { submitQuestionario } from "@/lib/api"
-import { calculateIndicators, convertFormDataToHospitalData, type CalculationResults } from "@/lib/hospital-calculations"
 
 interface QuestionarioData {
+  // Dados do Preenchedor e Hospital
+  email_preenchedor: string
+  nome_hospital: string
+  regiao_cep: string
+  
+  // Pronto-Socorro
   taxa_diaria_entradas_ps: number
   taxa_diaria_entradas_ambulancia: number
-  total_leitos_observacao: number
-  tempo_medio_permanencia_observacao_dias: number
+  
+  // Internações
   internacoes_clinicas_dia: number
   tempo_medio_permanencia_internado_dia: number
   internacoes_uti_dia: number
   tempo_medio_permanencia_uti_dias: number
+  
+  // Bloco Cirúrgico
   salas_procedimentos_eletivos: number
-  salas_urgencia: number
   total_unidades_rpa: number
   tempo_medio_permanencia_rpa_horas: number
   internacoes_cirurgicas_eletivas: number
   tmp_cirurgica_eletiva_dias: number
-  ticket_medio_ps_reais: number
+  
+  // LOS (Length of Stay)
   los_sem_internacao_horas: number
   los_com_internacao_horas: number
   tempo_consultorio_saida: number
   quantidade_pacientes_sem_internacao: number
   tempo_consultorio_internacao: number
   quantidade_pacientes_com_internacao: number
+  
+  // Exames
   media_raio_x: number
   media_laboratorial: number
   media_ultrassonografia: number
   media_tomografia: number
   media_outros_exames: number
   media_sem_exames: number
+  
+  // Classificação de Risco
   media_emergencia: number
   media_muito_urgente: number
   media_urgente: number
   media_pouco_urgente: number
   media_nao_urgente: number
+  
+  // Funcionários
   media_func_enfermagem: number
   media_func_apoio_terceirizados: number
   media_func_medicos_corpo_clinico: number
   media_func_administrativo: number
   media_func_multidisciplinar: number
   media_func_tecnicos_sadt: number
+  
+  // Médicos
   media_medico_diretor_tecnico_ps: number
   media_medico_clinico_emergencista: number
   media_medico_pediatra: number
@@ -58,11 +71,15 @@ interface QuestionarioData {
   media_medico_cirurgiao_geral: number
   media_medico_anestesista: number
   media_medico_hospitalista_rotina: number
+  
+  // Enfermeiros
   media_enf_gerente: number
   media_enf_supervisor_plantao: number
   media_enf_coord: number
   media_enf_assistencial: number
   media_enf_tecnico: number
+  
+  // Dados Horários - Pacientes
   media_pacientes_h00: number
   media_pacientes_h01: number
   media_pacientes_h02: number
@@ -87,6 +104,8 @@ interface QuestionarioData {
   media_pacientes_h21: number
   media_pacientes_h22: number
   media_pacientes_h23: number
+  
+  // Dados Horários - Staff Triagem
   media_staff_triagem_h00: number
   media_staff_triagem_h01: number
   media_staff_triagem_h02: number
@@ -111,6 +130,8 @@ interface QuestionarioData {
   media_staff_triagem_h21: number
   media_staff_triagem_h22: number
   media_staff_triagem_h23: number
+  
+  // Dados Horários - Staff Consultório
   media_staff_consultorio_h00: number
   media_staff_consultorio_h01: number
   media_staff_consultorio_h02: number
@@ -138,44 +159,60 @@ interface QuestionarioData {
 }
 
 const initialFormData: QuestionarioData = {
+  // Dados do Preenchedor e Hospital
+  email_preenchedor: "",
+  nome_hospital: "",
+  regiao_cep: "",
+  
+  // Pronto-Socorro
   taxa_diaria_entradas_ps: 0,
   taxa_diaria_entradas_ambulancia: 0,
-  total_leitos_observacao: 0,
-  tempo_medio_permanencia_observacao_dias: 0,
+  
+  // Internações
   internacoes_clinicas_dia: 0,
   tempo_medio_permanencia_internado_dia: 0,
   internacoes_uti_dia: 0,
   tempo_medio_permanencia_uti_dias: 0,
+  
+  // Bloco Cirúrgico
   salas_procedimentos_eletivos: 0,
-  salas_urgencia: 0,
   total_unidades_rpa: 0,
   tempo_medio_permanencia_rpa_horas: 0,
   internacoes_cirurgicas_eletivas: 0,
   tmp_cirurgica_eletiva_dias: 0,
-  ticket_medio_ps_reais: 0,
+  
+  // LOS (Length of Stay)
   los_sem_internacao_horas: 0,
   los_com_internacao_horas: 0,
   tempo_consultorio_saida: 0,
   quantidade_pacientes_sem_internacao: 0,
   tempo_consultorio_internacao: 0,
   quantidade_pacientes_com_internacao: 0,
+  
+  // Exames
   media_raio_x: 0,
   media_laboratorial: 0,
   media_ultrassonografia: 0,
   media_tomografia: 0,
   media_outros_exames: 0,
   media_sem_exames: 0,
+  
+  // Classificação de Risco
   media_emergencia: 0,
   media_muito_urgente: 0,
   media_urgente: 0,
   media_pouco_urgente: 0,
   media_nao_urgente: 0,
+  
+  // Funcionários
   media_func_enfermagem: 0,
   media_func_apoio_terceirizados: 0,
   media_func_medicos_corpo_clinico: 0,
   media_func_administrativo: 0,
   media_func_multidisciplinar: 0,
   media_func_tecnicos_sadt: 0,
+  
+  // Médicos
   media_medico_diretor_tecnico_ps: 0,
   media_medico_clinico_emergencista: 0,
   media_medico_pediatra: 0,
@@ -184,11 +221,15 @@ const initialFormData: QuestionarioData = {
   media_medico_cirurgiao_geral: 0,
   media_medico_anestesista: 0,
   media_medico_hospitalista_rotina: 0,
+  
+  // Enfermeiros
   media_enf_gerente: 0,
   media_enf_supervisor_plantao: 0,
   media_enf_coord: 0,
   media_enf_assistencial: 0,
   media_enf_tecnico: 0,
+  
+  // Dados Horários - Pacientes
   media_pacientes_h00: 0,
   media_pacientes_h01: 0,
   media_pacientes_h02: 0,
@@ -213,6 +254,8 @@ const initialFormData: QuestionarioData = {
   media_pacientes_h21: 0,
   media_pacientes_h22: 0,
   media_pacientes_h23: 0,
+  
+  // Dados Horários - Staff Triagem
   media_staff_triagem_h00: 0,
   media_staff_triagem_h01: 0,
   media_staff_triagem_h02: 0,
@@ -264,23 +307,63 @@ const initialFormData: QuestionarioData = {
 }
 
 export function HospitalOptimizationForm() {
-  const [activeTab, setActiveTab] = useState("input")
-  const [results, setResults] = useState<CalculationResults | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [saveMessage, setSaveMessage] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [formData, setFormData] = useState<QuestionarioData>(initialFormData)
+
+  // Carregar dados salvos do localStorage ao montar o componente
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("hospital_form_email")
+    if (savedEmail) {
+      const savedData = localStorage.getItem(`hospital_form_${savedEmail}`)
+      if (savedData) {
+        try {
+          const parsedData = JSON.parse(savedData)
+          setFormData(parsedData)
+        } catch (err) {
+          console.error("Erro ao carregar dados salvos:", err)
+        }
+      }
+    }
+  }, [])
+
+  // Salvar dados automaticamente quando o email ou formData mudar
+  useEffect(() => {
+    if (formData.email_preenchedor) {
+      localStorage.setItem("hospital_form_email", formData.email_preenchedor)
+      localStorage.setItem(`hospital_form_${formData.email_preenchedor}`, JSON.stringify(formData))
+    }
+  }, [formData])
 
   const handleInputChange = (field: keyof QuestionarioData, value: string) => {
     setFormData((prev: QuestionarioData) => ({
       ...prev,
-      [field]: Number.parseFloat(value) || 0,
+      [field]: field === "email_preenchedor" || field === "nome_hospital" || field === "regiao_cep" 
+        ? value 
+        : (Number.parseFloat(value) || 0),
     }))
+  }
+
+  const handleSaveDraft = () => {
+    if (!formData.email_preenchedor) {
+      setError("Por favor, informe seu email para salvar o rascunho")
+      return
+    }
+    
+    localStorage.setItem("hospital_form_email", formData.email_preenchedor)
+    localStorage.setItem(`hospital_form_${formData.email_preenchedor}`, JSON.stringify(formData))
+    
+    setSaveMessage("Rascunho salvo com sucesso!")
+    setTimeout(() => setSaveMessage(null), 3000)
   }
 
   const handleSubmit = async () => {
     try {
       setLoading(true)
       setError(null)
+      setSuccessMessage(null)
 
       console.log("Enviando questionário:", formData)
       
@@ -297,14 +380,15 @@ export function HospitalOptimizationForm() {
 
       console.log("Questionário enviado com sucesso:", result.data)
       
-      // Calcula os indicadores baseado nos dados do formulário
-      const hospitalData = convertFormDataToHospitalData(formData)
-      const calculationResults = calculateIndicators(hospitalData)
+      // Limpar o formulário após envio bem-sucedido
+      setFormData(initialFormData)
+      localStorage.removeItem("hospital_form_email")
+      if (formData.email_preenchedor) {
+        localStorage.removeItem(`hospital_form_${formData.email_preenchedor}`)
+      }
       
-      console.log("Cálculos realizados:", calculationResults)
-      
-      setResults(calculationResults)
-      setActiveTab("results")
+      setSuccessMessage("Questionário enviado com sucesso!")
+      setTimeout(() => setSuccessMessage(null), 5000)
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Erro ao enviar dados"
       console.error("Exceção capturada:", errorMsg)
@@ -315,33 +399,109 @@ export function HospitalOptimizationForm() {
   }
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-        <TabsTrigger value="input" className="gap-2">
-          <FileText className="w-4 h-4" />
-          Entrada de Dados
-        </TabsTrigger>
-        <TabsTrigger value="results" className="gap-2" disabled={!results}>
-          <TrendingUp className="w-4 h-4" />
-          Resultados
-        </TabsTrigger>
-      </TabsList>
+    <div className="w-full space-y-6">
+      {error && (
+        <Card className="border-red-500 bg-red-50">
+          <CardContent className="pt-6">
+            <p className="text-red-600">{error}</p>
+          </CardContent>
+        </Card>
+      )}
 
-      <TabsContent value="input" className="space-y-6">
-        {error && (
-          <Card className="border-red-500 bg-red-50">
-            <CardContent className="pt-6">
-              <p className="text-red-600">{error}</p>
-            </CardContent>
-          </Card>
-        )}
+      {saveMessage && (
+        <Card className="border-green-500 bg-green-50">
+          <CardContent className="pt-6">
+            <p className="text-green-600 flex items-center gap-2">
+              <Save className="w-4 h-4" />
+              {saveMessage}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {successMessage && (
+        <Card className="border-green-500 bg-green-50">
+          <CardContent className="pt-6">
+            <p className="text-green-600 flex items-center gap-2">
+              <Send className="w-4 h-4" />
+              {successMessage}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Identificação do Preenchedor */}
+      <Card className="border-primary/50 bg-primary/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="w-5 h-5" />
+            Identificação do Preenchedor
+          </CardTitle>
+            <CardDescription>
+              Informe seu email para salvar automaticamente seu progresso e retomar o preenchimento mais tarde
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="email_preenchedor">Email do Preenchedor *</Label>
+              <Input
+                id="email_preenchedor"
+                type="email"
+                value={formData.email_preenchedor}
+                onChange={(e) => handleInputChange("email_preenchedor", e.target.value)}
+                placeholder="seu.email@hospital.com.br"
+                required
+              />
+              <p className="text-sm text-muted-foreground">
+                Seus dados serão salvos automaticamente conforme você preenche
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Informações do Hospital */}
+        <Card className="border-primary/50 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Hospital className="w-5 h-5" />
+              Informações do Hospital
+            </CardTitle>
+            <CardDescription>
+              Dados básicos sobre a instituição de saúde
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="nome_hospital">Nome do Hospital *</Label>
+              <Input
+                id="nome_hospital"
+                type="text"
+                value={formData.nome_hospital}
+                onChange={(e) => handleInputChange("nome_hospital", e.target.value)}
+                placeholder="Ex: Hospital Municipal São José"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="regiao_cep">Região / CEP *</Label>
+              <Input
+                id="regiao_cep"
+                type="text"
+                value={formData.regiao_cep}
+                onChange={(e) => handleInputChange("regiao_cep", e.target.value)}
+                placeholder="Ex: São Paulo - SP / 01234-567"
+                required
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calculator className="w-5 h-5" />
-              Pronto-Socorro e Ambulância
-            </CardTitle>
+            <CardTitle>Pronto-Socorro e Ambulância</CardTitle>
+            <CardDescription>
+              Taxa média diária de pacientes atendidos no mês anterior
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
@@ -371,36 +531,10 @@ export function HospitalOptimizationForm() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Observação</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="total_leitos_observacao">Total de leitos de Observação</Label>
-              <Input
-                id="total_leitos_observacao"
-                type="number"
-                value={formData.total_leitos_observacao || ""}
-                onChange={(e) => handleInputChange("total_leitos_observacao", e.target.value)}
-                placeholder="Ex: 18"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tempo_medio_permanencia_observacao_dias">Tempo médio de permanência (dias)</Label>
-              <Input
-                id="tempo_medio_permanencia_observacao_dias"
-                type="number"
-                step="0.01"
-                value={formData.tempo_medio_permanencia_observacao_dias || ""}
-                onChange={(e) => handleInputChange("tempo_medio_permanencia_observacao_dias", e.target.value)}
-                placeholder="Ex: 0.7"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
             <CardTitle>Internações Clínicas</CardTitle>
+            <CardDescription>
+              Média diária de internações clínicas e tempo médio de permanência dos pacientes internados (dados do último mês)
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
@@ -431,6 +565,9 @@ export function HospitalOptimizationForm() {
         <Card>
           <CardHeader>
             <CardTitle>Internações UTI</CardTitle>
+            <CardDescription>
+              Média diária de internações em UTI e tempo médio de permanência (dados do último mês)
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
@@ -461,6 +598,9 @@ export function HospitalOptimizationForm() {
         <Card>
           <CardHeader>
             <CardTitle>Bloco Cirúrgico e RPA</CardTitle>
+            <CardDescription>
+              Informações sobre salas cirúrgicas, recuperação pós-anestésica e tempo médio de permanência na RPA (dados do último mês)
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
@@ -471,16 +611,6 @@ export function HospitalOptimizationForm() {
                 value={formData.salas_procedimentos_eletivos || ""}
                 onChange={(e) => handleInputChange("salas_procedimentos_eletivos", e.target.value)}
                 placeholder="Ex: 4"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="salas_urgencia">Salas para urgência</Label>
-              <Input
-                id="salas_urgencia"
-                type="number"
-                value={formData.salas_urgencia || ""}
-                onChange={(e) => handleInputChange("salas_urgencia", e.target.value)}
-                placeholder="Ex: 2"
               />
             </div>
             <div className="space-y-2">
@@ -510,6 +640,9 @@ export function HospitalOptimizationForm() {
         <Card>
           <CardHeader>
             <CardTitle>Internações Cirúrgicas Eletivas</CardTitle>
+            <CardDescription>
+              Média diária de cirurgias eletivas agendadas e tempo médio de permanência hospitalar (dados do último mês)
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
@@ -539,20 +672,12 @@ export function HospitalOptimizationForm() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Dados Financeiros e Tempo de Passagem</CardTitle>
+            <CardTitle>Length of Stay (LOS) - Tempo de Permanência</CardTitle>
+            <CardDescription>
+              Tempo médio de permanência dos pacientes no hospital (em horas)
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="ticket_medio_ps_reais">Ticket médio PS (R$)</Label>
-              <Input
-                id="ticket_medio_ps_reais"
-                type="number"
-                step="0.01"
-                value={formData.ticket_medio_ps_reais || ""}
-                onChange={(e) => handleInputChange("ticket_medio_ps_reais", e.target.value)}
-                placeholder="Ex: 780.50"
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="los_sem_internacao_horas">LOS sem internação (horas)</Label>
               <Input
@@ -581,6 +706,9 @@ export function HospitalOptimizationForm() {
         <Card>
           <CardHeader>
             <CardTitle>Consultório e Exames</CardTitle>
+            <CardDescription>
+              Tempo médio de atendimento em consultório e quantidade de pacientes atendidos (com e sem internação - dados do último mês)
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
@@ -629,6 +757,9 @@ export function HospitalOptimizationForm() {
         <Card>
           <CardHeader>
             <CardTitle>Média de Exames</CardTitle>
+            <CardDescription>
+              Quantidade média diária de exames realizados por tipo (dados do último mês)
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
@@ -697,6 +828,9 @@ export function HospitalOptimizationForm() {
         <Card>
           <CardHeader>
             <CardTitle>Média de Urgência (Classificação de Manchester)</CardTitle>
+            <CardDescription>
+              Distribuição média diária de pacientes por nível de urgência segundo o Protocolo de Manchester (dados do último mês)
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
@@ -755,6 +889,9 @@ export function HospitalOptimizationForm() {
         <Card>
           <CardHeader>
             <CardTitle>Média de Funcionários por Categoria</CardTitle>
+            <CardDescription>
+              Quantidade média de funcionários por setor e turno (considere a equipe típica do último mês)
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
@@ -823,6 +960,9 @@ export function HospitalOptimizationForm() {
         <Card>
           <CardHeader>
             <CardTitle>Médicos por Especialidade</CardTitle>
+            <CardDescription>
+              Quantidade média de médicos por especialidade por turno (considere a escala típica do último mês)
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
@@ -911,6 +1051,9 @@ export function HospitalOptimizationForm() {
         <Card>
           <CardHeader>
             <CardTitle>Enfermeiros por Nível</CardTitle>
+            <CardDescription>
+              Quantidade média de enfermeiros por nível hierárquico por turno (considere a escala típica do último mês)
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
@@ -969,7 +1112,11 @@ export function HospitalOptimizationForm() {
         <Card>
           <CardHeader>
             <CardTitle>Dados Horários - Média de Pacientes e Staff</CardTitle>
-            <CardDescription>Por hora do dia (00:00-23:00)</CardDescription>
+            <CardDescription>
+              Informe a média de pacientes que deram entrada no hospital em cada horário, 
+              considerando os dados do último mês. Também informe quantos profissionais 
+              estavam disponíveis para triagem e consultório em cada horário.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {Array.from({ length: 24 }, (_, i) => {
@@ -1018,19 +1165,23 @@ export function HospitalOptimizationForm() {
           </CardContent>
         </Card>
 
-        <div className="flex justify-center gap-4 pt-4">
-          <Button size="lg" onClick={handleSubmit} disabled={loading} className="gap-2">
-            <Send className="w-5 h-5" />
-            {loading ? "Enviando..." : "Enviar Questionário"}
-          </Button>
-        </div>
-      </TabsContent>
 
-      <TabsContent value="results">
-        {results && (
-          <ResultsDashboard results={results} formData={convertFormDataToHospitalData(formData)} />
-        )}
-      </TabsContent>
-    </Tabs>
+      <div className="flex justify-center gap-4 pt-4">
+        <Button 
+          size="lg" 
+          variant="outline" 
+          onClick={handleSaveDraft} 
+          className="gap-2"
+          type="button"
+        >
+          <Save className="w-5 h-5" />
+          Salvar Rascunho
+        </Button>
+        <Button size="lg" onClick={handleSubmit} disabled={loading} className="gap-2">
+          <Send className="w-5 h-5" />
+          {loading ? "Enviando..." : "Enviar Questionário"}
+        </Button>
+      </div>
+    </div>
   )
 }
