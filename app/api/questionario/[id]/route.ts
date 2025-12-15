@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 
+// Força a rota a ser dinâmica (não pré-renderizada)
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params
@@ -13,7 +16,19 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       )
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/questionario/${id}`, {
+    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL
+    
+    if (!apiUrl) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "API_BASE_URL não configurada",
+        },
+        { status: 500 }
+      )
+    }
+
+    const response = await fetch(`${apiUrl}/api/questionario/${id}`, {
       method: "GET",
     })
 

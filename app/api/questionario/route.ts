@@ -1,13 +1,46 @@
 import { NextRequest, NextResponse } from "next/server"
 
+// Força a rota a ser dinâmica (não pré-renderizada)
+export const dynamic = 'force-dynamic'
+
+// Função para fazer fetch com retry
+async function fetchWithRetry(url: string, options: RequestInit, retries = 3): Promise<Response> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, options)
+      return response
+    } catch (error) {
+      console.log(`Tentativa ${i + 1} falhou:`, error)
+      if (i === retries - 1) throw error
+      // Espera um pouco antes de tentar novamente
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)))
+    }
+  }
+  throw new Error('Todas as tentativas falharam')
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL
+    
     console.log("Request body:", JSON.stringify(body, null, 2))
-    console.log("API URL:", process.env.NEXT_PUBLIC_API_BASE_URL)
+    console.log("API URL:", apiUrl)
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/questionario`, {
+    if (!apiUrl) {
+      console.error("API_BASE_URL não configurada!")
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Configuração de API não encontrada",
+          message: "A variável de ambiente API_BASE_URL não está configurada. Configure NEXT_PUBLIC_API_BASE_URL ou API_BASE_URL no painel de deploy.",
+        },
+        { status: 500 }
+      )
+    }
+
+    const response = await fetchWithRetry(`${apiUrl}/api/questionario`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
