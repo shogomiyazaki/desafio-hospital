@@ -10,26 +10,31 @@ import { submitQuestionario } from "@/lib/api"
 
 interface QuestionarioData {
   // Dados do Preenchedor e Hospital
-  email_preenchedor: string
-  nome_hospital: string
-  regiao_cep: string
+  preenchedor_email: string
+  hospital_nome: string
+  hospital_cep: string
   
   // Pronto-Socorro
   taxa_diaria_entradas_ps: number
   taxa_diaria_entradas_ambulancia: number
+  
+  // Capacidade de Leitos
+  capacidade_leitos_uti: number
+  capacidade_leitos_clinicos: number
+  capacidade_leitos_cirurgicos: number
   
   // Internações
   internacoes_clinicas_dia: number
   tempo_medio_permanencia_internado_dia: number
   internacoes_uti_dia: number
   tempo_medio_permanencia_uti_dias: number
+  internacoes_cirurgicas_eletivas: number
+  tmp_cirurgica_eletiva_dias: number
   
   // Bloco Cirúrgico
   salas_procedimentos_eletivos: number
   total_unidades_rpa: number
   tempo_medio_permanencia_rpa_horas: number
-  internacoes_cirurgicas_eletivas: number
-  tmp_cirurgica_eletiva_dias: number
   
   // LOS (Length of Stay)
   los_sem_internacao_horas: number
@@ -160,26 +165,31 @@ interface QuestionarioData {
 
 const initialFormData: QuestionarioData = {
   // Dados do Preenchedor e Hospital
-  email_preenchedor: "",
-  nome_hospital: "",
-  regiao_cep: "",
+  preenchedor_email: "",
+  hospital_nome: "",
+  hospital_cep: "",
   
   // Pronto-Socorro
   taxa_diaria_entradas_ps: 0,
   taxa_diaria_entradas_ambulancia: 0,
+  
+  // Capacidade de Leitos
+  capacidade_leitos_uti: 0,
+  capacidade_leitos_clinicos: 0,
+  capacidade_leitos_cirurgicos: 0,
   
   // Internações
   internacoes_clinicas_dia: 0,
   tempo_medio_permanencia_internado_dia: 0,
   internacoes_uti_dia: 0,
   tempo_medio_permanencia_uti_dias: 0,
+  internacoes_cirurgicas_eletivas: 0,
+  tmp_cirurgica_eletiva_dias: 0,
   
   // Bloco Cirúrgico
   salas_procedimentos_eletivos: 0,
   total_unidades_rpa: 0,
   tempo_medio_permanencia_rpa_horas: 0,
-  internacoes_cirurgicas_eletivas: 0,
-  tmp_cirurgica_eletiva_dias: 0,
   
   // LOS (Length of Stay)
   los_sem_internacao_horas: 0,
@@ -331,29 +341,29 @@ export function HospitalOptimizationForm() {
 
   // Salvar dados automaticamente quando o email ou formData mudar
   useEffect(() => {
-    if (formData.email_preenchedor) {
-      localStorage.setItem("hospital_form_email", formData.email_preenchedor)
-      localStorage.setItem(`hospital_form_${formData.email_preenchedor}`, JSON.stringify(formData))
+    if (formData.preenchedor_email) {
+      localStorage.setItem("hospital_form_email", formData.preenchedor_email)
+      localStorage.setItem(`hospital_form_${formData.preenchedor_email}`, JSON.stringify(formData))
     }
   }, [formData])
 
   const handleInputChange = (field: keyof QuestionarioData, value: string) => {
     setFormData((prev: QuestionarioData) => ({
       ...prev,
-      [field]: field === "email_preenchedor" || field === "nome_hospital" || field === "regiao_cep" 
+      [field]: field === "preenchedor_email" || field === "hospital_nome" || field === "hospital_cep" 
         ? value 
         : (Number.parseFloat(value) || 0),
     }))
   }
 
   const handleSaveDraft = () => {
-    if (!formData.email_preenchedor) {
+    if (!formData.preenchedor_email) {
       setError("Por favor, informe seu email para salvar o rascunho")
       return
     }
     
-    localStorage.setItem("hospital_form_email", formData.email_preenchedor)
-    localStorage.setItem(`hospital_form_${formData.email_preenchedor}`, JSON.stringify(formData))
+    localStorage.setItem("hospital_form_email", formData.preenchedor_email)
+    localStorage.setItem(`hospital_form_${formData.preenchedor_email}`, JSON.stringify(formData))
     
     setSaveMessage("Rascunho salvo com sucesso!")
     setTimeout(() => setSaveMessage(null), 3000)
@@ -383,8 +393,8 @@ export function HospitalOptimizationForm() {
       // Limpar o formulário após envio bem-sucedido
       setFormData(initialFormData)
       localStorage.removeItem("hospital_form_email")
-      if (formData.email_preenchedor) {
-        localStorage.removeItem(`hospital_form_${formData.email_preenchedor}`)
+      if (formData.preenchedor_email) {
+        localStorage.removeItem(`hospital_form_${formData.preenchedor_email}`)
       }
       
       setSuccessMessage("Questionário enviado com sucesso!")
@@ -443,12 +453,12 @@ export function HospitalOptimizationForm() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Label htmlFor="email_preenchedor">Email do Preenchedor *</Label>
+              <Label htmlFor="preenchedor_email">Email do Preenchedor *</Label>
               <Input
-                id="email_preenchedor"
+                id="preenchedor_email"
                 type="email"
-                value={formData.email_preenchedor}
-                onChange={(e) => handleInputChange("email_preenchedor", e.target.value)}
+                value={formData.preenchedor_email}
+                onChange={(e) => handleInputChange("preenchedor_email", e.target.value)}
                 placeholder="seu.email@hospital.com.br"
                 required
               />
@@ -472,24 +482,24 @@ export function HospitalOptimizationForm() {
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="nome_hospital">Nome do Hospital *</Label>
+              <Label htmlFor="hospital_nome">Nome do Hospital *</Label>
               <Input
-                id="nome_hospital"
+                id="hospital_nome"
                 type="text"
-                value={formData.nome_hospital}
-                onChange={(e) => handleInputChange("nome_hospital", e.target.value)}
+                value={formData.hospital_nome}
+                onChange={(e) => handleInputChange("hospital_nome", e.target.value)}
                 placeholder="Ex: Hospital Municipal São José"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="regiao_cep">Região / CEP *</Label>
+              <Label htmlFor="hospital_cep">CEP *</Label>
               <Input
-                id="regiao_cep"
+                id="hospital_cep"
                 type="text"
-                value={formData.regiao_cep}
-                onChange={(e) => handleInputChange("regiao_cep", e.target.value)}
-                placeholder="Ex: São Paulo - SP / 01234-567"
+                value={formData.hospital_cep}
+                onChange={(e) => handleInputChange("hospital_cep", e.target.value)}
+                placeholder="Ex: 01234-567"
                 required
               />
             </div>
@@ -524,6 +534,47 @@ export function HospitalOptimizationForm() {
                 value={formData.taxa_diaria_entradas_ambulancia || ""}
                 onChange={(e) => handleInputChange("taxa_diaria_entradas_ambulancia", e.target.value)}
                 placeholder="Ex: 22"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Capacidade de Leitos</CardTitle>
+            <CardDescription>
+              Capacidade total de leitos disponíveis por tipo
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="capacidade_leitos_uti">Leitos UTI</Label>
+              <Input
+                id="capacidade_leitos_uti"
+                type="number"
+                value={formData.capacidade_leitos_uti || ""}
+                onChange={(e) => handleInputChange("capacidade_leitos_uti", e.target.value)}
+                placeholder="Ex: 20"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="capacidade_leitos_clinicos">Leitos Clínicos</Label>
+              <Input
+                id="capacidade_leitos_clinicos"
+                type="number"
+                value={formData.capacidade_leitos_clinicos || ""}
+                onChange={(e) => handleInputChange("capacidade_leitos_clinicos", e.target.value)}
+                placeholder="Ex: 50"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="capacidade_leitos_cirurgicos">Leitos Cirúrgicos</Label>
+              <Input
+                id="capacidade_leitos_cirurgicos"
+                type="number"
+                value={formData.capacidade_leitos_cirurgicos || ""}
+                onChange={(e) => handleInputChange("capacidade_leitos_cirurgicos", e.target.value)}
+                placeholder="Ex: 30"
               />
             </div>
           </CardContent>
