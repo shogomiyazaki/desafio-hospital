@@ -9,65 +9,46 @@ import { Send, Save, Hospital, Mail, MapPin } from "lucide-react"
 import { submitQuestionario } from "@/lib/api"
 
 interface QuestionarioData {
-  // Dados do Preenchedor e Hospital
   preenchedor_email: string
   hospital_nome: string
   hospital_cep: string
-  
-  // Pronto-Socorro
   taxa_diaria_entradas_ps: number
   taxa_diaria_entradas_ambulancia: number
-  
-  // Capacidade de Leitos
   capacidade_leitos_uti: number
   capacidade_leitos_clinicos: number
   capacidade_leitos_cirurgicos: number
-  
-  // Internações
   internacoes_clinicas_dia: number
   tempo_medio_permanencia_internado_dia: number
   internacoes_uti_dia: number
   tempo_medio_permanencia_uti_dias: number
   internacoes_cirurgicas_eletivas: number
   tmp_cirurgica_eletiva_dias: number
-  
-  // Bloco Cirúrgico
   salas_procedimentos_eletivos: number
   total_unidades_rpa: number
   tempo_medio_permanencia_rpa_horas: number
-  
-  // LOS (Length of Stay)
   los_sem_internacao_horas: number
   los_com_internacao_horas: number
   tempo_consultorio_saida: number
   quantidade_pacientes_sem_internacao: number
   tempo_consultorio_internacao: number
   quantidade_pacientes_com_internacao: number
-  
-  // Exames
   media_raio_x: number
   media_laboratorial: number
   media_ultrassonografia: number
   media_tomografia: number
   media_outros_exames: number
   media_sem_exames: number
-  
-  // Classificação de Risco
   media_emergencia: number
   media_muito_urgente: number
   media_urgente: number
   media_pouco_urgente: number
   media_nao_urgente: number
-  
-  // Funcionários
   media_func_enfermagem: number
   media_func_apoio_terceirizados: number
   media_func_medicos_corpo_clinico: number
   media_func_administrativo: number
   media_func_multidisciplinar: number
   media_func_tecnicos_sadt: number
-  
-  // Médicos
   media_medico_diretor_tecnico_ps: number
   media_medico_clinico_emergencista: number
   media_medico_pediatra: number
@@ -76,15 +57,11 @@ interface QuestionarioData {
   media_medico_cirurgiao_geral: number
   media_medico_anestesista: number
   media_medico_hospitalista_rotina: number
-  
-  // Enfermeiros
   media_enf_gerente: number
   media_enf_supervisor_plantao: number
   media_enf_coord: number
   media_enf_assistencial: number
   media_enf_tecnico: number
-  
-  // Dados Horários - Pacientes
   media_pacientes_h00: number
   media_pacientes_h01: number
   media_pacientes_h02: number
@@ -109,8 +86,6 @@ interface QuestionarioData {
   media_pacientes_h21: number
   media_pacientes_h22: number
   media_pacientes_h23: number
-  
-  // Dados Horários - Staff Triagem
   media_staff_triagem_h00: number
   media_staff_triagem_h01: number
   media_staff_triagem_h02: number
@@ -135,8 +110,6 @@ interface QuestionarioData {
   media_staff_triagem_h21: number
   media_staff_triagem_h22: number
   media_staff_triagem_h23: number
-  
-  // Dados Horários - Staff Consultório
   media_staff_consultorio_h00: number
   media_staff_consultorio_h01: number
   media_staff_consultorio_h02: number
@@ -164,21 +137,20 @@ interface QuestionarioData {
 }
 
 const initialFormData: QuestionarioData = {
-  // Dados do Preenchedor e Hospital
   preenchedor_email: "",
   hospital_nome: "",
   hospital_cep: "",
   
-  // Pronto-Socorro
+  
   taxa_diaria_entradas_ps: 0,
   taxa_diaria_entradas_ambulancia: 0,
   
-  // Capacidade de Leitos
+  
   capacidade_leitos_uti: 0,
   capacidade_leitos_clinicos: 0,
   capacidade_leitos_cirurgicos: 0,
   
-  // Internações
+  
   internacoes_clinicas_dia: 0,
   tempo_medio_permanencia_internado_dia: 0,
   internacoes_uti_dia: 0,
@@ -186,12 +158,12 @@ const initialFormData: QuestionarioData = {
   internacoes_cirurgicas_eletivas: 0,
   tmp_cirurgica_eletiva_dias: 0,
   
-  // Bloco Cirúrgico
+  
   salas_procedimentos_eletivos: 0,
   total_unidades_rpa: 0,
   tempo_medio_permanencia_rpa_horas: 0,
   
-  // LOS (Length of Stay)
+  
   los_sem_internacao_horas: 0,
   los_com_internacao_horas: 0,
   tempo_consultorio_saida: 0,
@@ -199,7 +171,7 @@ const initialFormData: QuestionarioData = {
   tempo_consultorio_internacao: 0,
   quantidade_pacientes_com_internacao: 0,
   
-  // Exames
+  
   media_raio_x: 0,
   media_laboratorial: 0,
   media_ultrassonografia: 0,
@@ -207,14 +179,14 @@ const initialFormData: QuestionarioData = {
   media_outros_exames: 0,
   media_sem_exames: 0,
   
-  // Classificação de Risco
+  
   media_emergencia: 0,
   media_muito_urgente: 0,
   media_urgente: 0,
   media_pouco_urgente: 0,
   media_nao_urgente: 0,
   
-  // Funcionários
+  
   media_func_enfermagem: 0,
   media_func_apoio_terceirizados: 0,
   media_func_medicos_corpo_clinico: 0,
@@ -222,7 +194,7 @@ const initialFormData: QuestionarioData = {
   media_func_multidisciplinar: 0,
   media_func_tecnicos_sadt: 0,
   
-  // Médicos
+  
   media_medico_diretor_tecnico_ps: 0,
   media_medico_clinico_emergencista: 0,
   media_medico_pediatra: 0,
@@ -232,14 +204,14 @@ const initialFormData: QuestionarioData = {
   media_medico_anestesista: 0,
   media_medico_hospitalista_rotina: 0,
   
-  // Enfermeiros
+  
   media_enf_gerente: 0,
   media_enf_supervisor_plantao: 0,
   media_enf_coord: 0,
   media_enf_assistencial: 0,
   media_enf_tecnico: 0,
   
-  // Dados Horários - Pacientes
+  
   media_pacientes_h00: 0,
   media_pacientes_h01: 0,
   media_pacientes_h02: 0,
@@ -265,7 +237,7 @@ const initialFormData: QuestionarioData = {
   media_pacientes_h22: 0,
   media_pacientes_h23: 0,
   
-  // Dados Horários - Staff Triagem
+  
   media_staff_triagem_h00: 0,
   media_staff_triagem_h01: 0,
   media_staff_triagem_h02: 0,
@@ -324,7 +296,7 @@ export function HospitalOptimizationForm() {
   const [formData, setFormData] = useState<QuestionarioData>(initialFormData)
   const [skipAutoSave, setSkipAutoSave] = useState(false)
 
-  // Carregar dados salvos do localStorage ao montar o componente
+  
   useEffect(() => {
     const savedEmail = localStorage.getItem("hospital_form_email")
     if (savedEmail) {
@@ -340,7 +312,7 @@ export function HospitalOptimizationForm() {
     }
   }, [])
 
-  // Prevenir mudança de valor em inputs numéricos com scroll do mouse
+  
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       const target = e.target as HTMLElement
@@ -350,7 +322,7 @@ export function HospitalOptimizationForm() {
       }
     }
 
-    // Adicionar listener no documento
+    
     document.addEventListener('wheel', handleWheel, { passive: false, capture: true })
     
     return () => {
@@ -358,9 +330,8 @@ export function HospitalOptimizationForm() {
     }
   }, [])
 
-  // Salvar dados automaticamente quando o email ou formData mudar
+  
   useEffect(() => {
-    // Não salvar se acabamos de fazer submit ou se não tem email
     if (skipAutoSave || !formData.preenchedor_email) {
       return
     }
@@ -412,14 +383,14 @@ export function HospitalOptimizationForm() {
 
       console.log("Questionário enviado com sucesso:", result.data)
       
-      // Ativar flag para pular auto-save durante a limpeza
+
       setSkipAutoSave(true)
       
-      // Limpar o formulário após envio bem-sucedido
+      
       const emailToRemove = formData.preenchedor_email
       setFormData(initialFormData)
       
-      // Limpar localStorage
+      
       localStorage.removeItem("hospital_form_email")
       if (emailToRemove) {
         localStorage.removeItem(`hospital_form_${emailToRemove}`)
@@ -427,7 +398,7 @@ export function HospitalOptimizationForm() {
       
       setSuccessMessage("Questionário enviado com sucesso!")
       
-      // Desativar flag após um tempo para permitir novo preenchimento
+      
       setTimeout(() => {
         setSkipAutoSave(false)
       }, 1000)

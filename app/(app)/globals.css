@@ -123,7 +123,6 @@
     @apply bg-background text-foreground;
   }
   
-  /* Prevenir mudança de valor em inputs numéricos com scroll do mouse */
   input[type="number"] {
     -moz-appearance: textfield;
   }
@@ -134,7 +133,6 @@
     margin: 0;
   }
   
-  /* Forçar desabilitar scroll change */
   input[type="number"]:focus {
     -moz-appearance: textfield;
   }

@@ -1,7 +1,3 @@
-/**
- * Utilitário para fazer requisições ao backend API
- */
-
 export interface ApiResponse<T = any> {
   success: boolean
   data?: T
@@ -9,9 +5,7 @@ export interface ApiResponse<T = any> {
   error?: string
 }
 
-/**
- * Faz uma requisição GET para a API
- */
+
 export async function apiGet<T = any>(endpoint: string): Promise<ApiResponse<T>> {
   try {
     const response = await fetch(`/api${endpoint}`, {
@@ -37,9 +31,6 @@ export async function apiGet<T = any>(endpoint: string): Promise<ApiResponse<T>>
   }
 }
 
-/**
- * Faz uma requisição POST para a API
- */
 export async function apiPost<T = any>(endpoint: string, body: any): Promise<ApiResponse<T>> {
   try {
     const response = await fetch(`/api${endpoint}`, {
@@ -70,16 +61,10 @@ export async function apiPost<T = any>(endpoint: string, body: any): Promise<Api
   }
 }
 
-/**
- * Verifica a saúde da API
- */
 export async function checkApiHealth() {
   return apiGet("/health")
 }
 
-/**
- * Envia um questionário para o banco de dados
- */
 export async function submitQuestionario(data: any) {
   console.log("submitQuestionario: enviando dados", data)
   const result = apiPost("/questionario", data)
@@ -87,9 +72,6 @@ export async function submitQuestionario(data: any) {
   return result
 }
 
-/**
- * Recupera um questionário por ID
- */
 export async function getQuestionario(id: string) {
   return apiGet(`/questionario/${id}`)
 }
