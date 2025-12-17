@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 
-// Força a rota a ser dinâmica (não pré-renderizada)
 export const dynamic = 'force-dynamic'
 
 export async function GET() {

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
-// Força a rota a ser dinâmica (não pré-renderizada)
 export const dynamic = 'force-dynamic'
 
-// Função para fazer fetch com retry
 async function fetchWithRetry(url: string, options: RequestInit, retries = 3): Promise<Response> {
   for (let i = 0; i < retries; i++) {
     try {
@@ -12,7 +10,6 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3): P
     } catch (error) {
       console.log(`Tentativa ${i + 1} falhou:`, error)
       if (i === retries - 1) throw error
-      // Espera um pouco antes de tentar novamente
       await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)))
     }
   }
