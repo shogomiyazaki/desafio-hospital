@@ -1,0 +1,315 @@
+\documentclass[12pt, a4paper]{article}
+
+% --- Pacotes Fundamentais ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{float} % Para posicionamento de imagens
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+
+% --- Configuração de Margens ---
+\geometry{left=3cm, right=2cm, top=3cm, bottom=2cm}
+
+% --- Estilo de Código (SQL/JavaScript) ---
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\title{Sistema Web para Apoio à Gestão Hospitalar}
+\author{
+    Nome do Integrante 1 \\
+    Nome do Integrante 2 \\
+    Nome do Integrante 3
+}
+\date{2025}
+
+\begin{document}
+
+% --- Capa ---
+\begin{titlepage}
+    \centering
+    \textbf{\large UNIVERSIDADE FEDERAL DE SÃO PAULO}\\[0.2cm]
+    \textbf{\large INSTITUTO DE CIÊNCIA E TECNOLOGIA}\\[4cm]
+    
+    \textbf{\Large Sistema de Coleta e Power BI para Gestão de Fluxo Hospitalar}\\[4cm]
+    
+    \textbf{Arthur Losano de Araújo Silva}\\
+    \textbf{Shogo Miyazaki}\\
+    \textbf{Rafael Pires Moreira Silva}\\
+    \textbf{Thiago Lamin de Souza}\\
+    \textbf{Orientador: Dr. Luiz Leduino de Salles Neto}\\[4cm]
+    
+    \vfill
+    
+    \textbf{São José dos Campos, SP}\\
+    \textbf{2025}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Proponente}
+Este estudo foi proposto por Daniel Meireles e desenvolvido na disciplina de Resolução de Problemas via Modelagem Matemática da Universidade Federal de São Paulo (Unifesp), com orientação do professor Luiz Leduíno S. Neto.
+
+\section{Definição do Problema}
+A gestão hospitalar enfrenta o desafio complexo de alinhar a demanda de pacientes, a capacidade instalada, o orçamento disponível, a utilização dos recursos entre outros. Assim, a falta de uma compreensão geral promove uma dificuldade em ajustar escalas de mão de obra e disponibilidade de leitos frente a variações nas taxas de chegada e tempos de atendimento, o que gera aumento nos tempos de espera, filas no Pronto-Socorro e cancelamentos cirúrgicos devido à falta de previsão de gargalos.
+
+\section{Objetivos}
+Dessa forma, desenvolveu-se um sistema que integra a coleta de dados hospitalares à construção de uma aplicação para visualização e simulação de cenários operacionais. A solução visa auxiliar a tomada de decisão, com o objetivo de reduzir a evasão, tempos de espera, otimizar a ocupação de leitos e ampliar a equidade no acesso aos serviços de saúde.
+
+\section{Fundamentos Teóricos}
+Esta seção apresenta a arquitetura de software adotada no projeto, descrevendo os principais componentes do sistema e a forma como eles se integram. A solução foi estruturada em camadas, visando a separação de responsabilidades, facilidade de manutenção e viabilidade de implantação em ambientes de baixo custo.
+
+\subsection{Frontend Web}
+O frontend do sistema foi desenvolvido utilizando o framework Next.js, baseado na biblioteca React, sendo responsável pela interface de interação com o usuário. A aplicação consiste em um formulário web no qual são inseridas métricas hospitalares, como fluxos de atendimento, disponibilidade de recursos e informações operacionais.
+
+A aplicação frontend está hospedada no serviço Vercel, plataforma especializada no deploy de aplicações Next.js, que oferece alta disponibilidade e integração contínua. O formulário realiza requisições HTTP ao servidor backend de acordo com a operação solicitada pelo usuário, como inclusão de novos registros ou visualização das informações já armazenadas no sistema.
+
+\subsection{Infraestrutura de Servidor}
+A infraestrutura de servidor do projeto está hospedada na Oracle Cloud Infrastructure (OCI), por meio de uma máquina virtual do tipo \textit{VM.Standard.E2.1.Micro}. Essa instância utiliza o sistema operacional Canonical Ubuntu e possui 1 GB de memória RAM e 1 vCPU.
+
+Essa configuração se enquadra no programa \textit{Always Free Tier} da Oracle Cloud, permitindo a utilização gratuita e por tempo ilimitado da máquina virtual. Tal característica torna a solução adequada para projetos acadêmicos e de pequeno porte, reduzindo custos operacionais sem comprometer o funcionamento do sistema.
+
+\subsection{Backend e API}
+No servidor em nuvem está em execução uma API desenvolvida em Python, utilizando o framework Flask. Essa API atua como camada intermediária entre o frontend e o banco de dados, sendo responsável por receber as requisições enviadas pelo formulário web, processar as operações de inclusão e consulta de informações, além de realizar validações básicas sobre os dados recebidos.
+
+A escolha do Flask se deve à sua simplicidade, leveza e facilidade na criação de serviços RESTful, características adequadas para aplicações com arquitetura enxuta e escopo bem definido.
+
+\subsection{Banco de Dados}
+A persistência dos dados é realizada por meio do Supabase, um serviço de \textit{Backend as a Service} (BaaS) que utiliza o sistema gerenciador de banco de dados PostgreSQL em nuvem. A API backend se comunica diretamente com esse banco para armazenar e recuperar as informações coletadas pelo sistema.
+
+O Supabase oferece recursos como gerenciamento de conexões, escalabilidade e manutenção simplificada da base de dados. Embora o serviço seja utilizado em um plano gratuito com limitações de uso, o volume de dados atualmente gerado pelo projeto se mantém dentro desses limites, não ocasionando restrições de acesso ou funcionamento.
+
+\section{Modelo da Solução (Arquitetura e Dados)}
+
+Este item descreve o modelo conceitual adotado para a solução desenvolvida, com foco na organização dos dados e no fluxo de informações entre os diferentes componentes do sistema. Diferentemente de modelos matemáticos clássicos de otimização, o projeto se baseia na estruturação de dados operacionais hospitalares, que servem de insumo para o cálculo de indicadores, visualização gerencial e simulação de cenários.
+
+A seção apresenta, inicialmente, os parâmetros de entrada coletados por meio da aplicação web, detalhando o fluxo de dados desde a interação do usuário até o armazenamento persistente. Em seguida, é descrita a modelagem do banco de dados, explicitando a estrutura das variáveis armazenadas e sua relação com os indicadores e análises realizadas pelo sistema.
+
+\subsection{Descrição do Formulário Web e Parâmetros de Entrada}
+
+A interface de coleta de dados do sistema consiste em um formulário web responsivo hospedado na plataforma Vercel, que organiza as entradas do usuário de forma estruturada para alimentar os indicadores e análises posteriores. O formulário foi projetado para permitir que o gestor ou responsável preencha informações operacionais essenciais relativas à instituição de saúde e à sua demanda assistencial. :contentReference[oaicite:1]{index=1}
+
+O formulário é dividido em blocos lógicos contendo campos obrigatórios e opcionais, conforme descrito a seguir: :contentReference[oaicite:2]{index=2}
+
+\begin{itemize}
+    \item \textbf{Identificação do Preenchedor:} coleta o e-mail do usuário responsável pelo preenchimento, permitindo salvar automaticamente o progresso e retomar o preenchimento posteriormente.
+    \item \textbf{Informações do Hospital:} inclui campos como nome da instituição e CEP, que identificam a unidade de saúde avaliada.
+    \item \textbf{Pronto-Socorro e Ambulância:} taxa média diária de atendimentos no pronto-socorro e entradas via ambulância no período de referência.{index=5}
+    \item \textbf{Capacidade de Leitos:} quantidade de leitos disponíveis por tipo (UTI, clínicos e cirúrgicos).
+    \item \textbf{Internações Clínicas e UTI:} médias diárias de internações e tempos médios de permanência tanto em unidades clínicas quanto de terapia intensiva.
+    \item \textbf{Bloco Cirúrgico e RPA:} quantidade de salas para procedimentos eletivos, unidades de recuperação pós-anestésica (RPA) e tempos médios de permanência.
+    \item \textbf{Internações Cirúrgicas Eletivas:} média diária de cirurgias agendadas e tempo médio de permanência hospitalar desses pacientes.
+    \item \textbf{Métricas de Permanência e Atendimento:} como os tempos médios de permanência hospitalar (LOS) e atendimento em consultório, com segregação por pacientes internados e não internados.
+    \item \textbf{Exames e Urgências:} médias diárias de exames realizados por tipo, além da distribuição de pacientes por níveis de urgência segundo o Protocolo de Manchester. 
+    \item \textbf{Perfil de Recursos Humanos:} médias de profissionais por categoria (enfermagem, medicina, apoio etc.) e por horário, refletindo a alocação de pessoal ao longo do dia.
+\end{itemize}
+
+Todos os campos do formulário são validados no frontend e enviados por meio de requisição HTTP ao backend para armazenamento no banco de dados, garantindo que os dados coletados estejam consistentes e aptos para a geração de KPIs e visualizações.
+
+
+\subsection{Modelagem do Banco de Dados (Estrutura de Armazenamento)}
+
+O armazenamento das informações coletadas é realizado por meio da tabela relacional \texttt{questionario\_v3}, implementada em um banco de dados PostgreSQL. Cada tupla da tabela representa uma instância completa de preenchimento do questionário, associada a uma unidade hospitalar e a um instante temporal específico, permitindo análises comparativas e históricas.
+
+A tabela utiliza uma chave primária do tipo \texttt{BIGSERIAL} (\texttt{id}), garantindo unicidade dos registros, além de um atributo temporal (\texttt{created\_at}) responsável por registrar automaticamente o momento da inserção dos dados. A seguir, descrevem-se as categorias de atributos que compõem a estrutura da tabela.
+
+\subsubsection*{Identificação e Metadados}
+Este grupo concentra os campos responsáveis pela identificação do registro, do hospital e do responsável pelo preenchimento:
+\begin{itemize}
+    \item \texttt{preenchedor\_email}
+    \item \texttt{hospital\_nome}
+    \item \texttt{hospital\_cep}
+\end{itemize}
+
+\subsubsection*{Demanda Assistencial}
+Campos que representam o volume médio diário de entradas no sistema hospitalar:
+\begin{itemize}
+    \item \texttt{taxa\_diaria\_entradas\_ps}
+    \item \texttt{taxa\_diaria\_entradas\_ambulancia}
+\end{itemize}
+
+\subsubsection*{Capacidade Instalada de Leitos}
+Atributos que descrevem a capacidade física do hospital em termos de leitos disponíveis:
+\begin{itemize}
+    \item \texttt{capacidade\_leitos\_uti}
+    \item \texttt{capacidade\_leitos\_clinicos}
+    \item \texttt{capacidade\_leitos\_cirurgicos}
+\end{itemize}
+
+\subsubsection*{Internações e Tempos Médios de Permanência}
+Este conjunto armazena informações relacionadas às internações e aos tempos médios de permanência (LOS):
+\begin{itemize}
+    \item \texttt{internacoes\_clinicas\_dia}
+    \item \texttt{tempo\_medio\_permanencia\_internado\_dia}
+    \item \texttt{internacoes\_uti\_dia}
+    \item \texttt{tempo\_medio\_permanencia\_uti\_dias}
+    \item \texttt{internacoes\_cirurgicas\_eletivas}
+    \item \texttt{tmp\_cirurgica\_eletiva\_dias}
+\end{itemize}
+
+\subsubsection*{Infraestrutura Cirúrgica e RPA}
+Campos destinados à caracterização do bloco cirúrgico e da recuperação pós-anestésica:
+\begin{itemize}
+    \item \texttt{salas\_procedimentos\_eletivos}
+    \item \texttt{total\_unidades\_rpa}
+    \item \texttt{tempo\_medio\_permanencia\_rpa\_horas}
+\end{itemize}
+
+\subsubsection*{Indicadores de Atendimento e LOS no Pronto-Socorro}
+Atributos que descrevem o comportamento do atendimento ambulatorial, diferenciando pacientes com e sem internação:
+\begin{itemize}
+    \item \texttt{los\_sem\_internacao\_horas}
+    \item \texttt{los\_com\_internacao\_horas}
+    \item \texttt{tempo\_consultorio\_saida}
+    \item \texttt{quantidade\_pacientes\_sem\_internacao}
+    \item \texttt{tempo\_consultorio\_internacao}
+    \item \texttt{quantidade\_pacientes\_com\_internacao}
+\end{itemize}
+
+\subsubsection*{Mix de Exames Diagnósticos}
+Campos que armazenam a média diária de exames realizados por categoria:
+\begin{itemize}
+    \item \texttt{media\_raio\_x}
+    \item \texttt{media\_laboratorial}
+    \item \texttt{media\_ultrassonografia}
+    \item \texttt{media\_tomografia}
+    \item \texttt{media\_outros\_exames}
+    \item \texttt{media\_sem\_exames}
+\end{itemize}
+
+\subsubsection*{Classificação de Risco (Protocolo de Manchester)}
+Variáveis associadas à distribuição média dos pacientes por nível de urgência:
+\begin{itemize}
+    \item \texttt{media\_emergencia}
+    \item \texttt{media\_muito\_urgente}
+    \item \texttt{media\_urgente}
+    \item \texttt{media\_pouco\_urgente}
+    \item \texttt{media\_nao\_urgente}
+\end{itemize}
+
+\subsubsection*{Recursos Humanos (Médias Globais)}
+Atributos que descrevem o dimensionamento médio das equipes por categoria profissional:
+\begin{itemize}
+    \item \texttt{media\_func\_enfermagem}
+    \item \texttt{media\_func\_apoio\_terceirizados}
+    \item \texttt{media\_func\_medicos\_corpo\_clinico}
+    \item \texttt{media\_func\_administrativo}
+    \item \texttt{media\_func\_multidisciplinar}
+    \item \texttt{media\_func\_tecnicos\_sadt}
+\end{itemize}
+
+\subsubsection*{Distribuição Horária de Pacientes e Equipes}
+Este grupo concentra variáveis indexadas por hora do dia, utilizadas para análises de picos de demanda e alocação de recursos:
+\begin{itemize}
+    \item \texttt{media\_pacientes\_h00} \ldots \texttt{media\_pacientes\_h23}
+    \item \texttt{media\_staff\_triagem\_h00} \ldots \texttt{media\_staff\_triagem\_h23}
+    \item \texttt{media\_staff\_consultorio\_h00} \ldots \texttt{media\_staff\_consultorio\_h23}
+\end{itemize}
+
+A modelagem adotada prioriza simplicidade e aderência ao domínio do problema, utilizando dados agregados para viabilizar análises operacionais e simulações iniciais. Essa estrutura permite extensões futuras, como a normalização dos dados em múltiplas tabelas ou a inclusão de informações transacionais mais detalhadas, sem comprometer a compatibilidade com os dados já coletados.
+
+
+\subsection{Indicadores}
+Abaixo temos alguns dos KPIs calculados e utilizados:
+\begin{itemize}
+    \item Fator de Utilização
+    \item Taxa de Ocupação (\%) = $\frac{\text{Leitos Ocupados}}{\text{Capacidade Total}}$.
+    \item Tempo Médio de Espera         
+\end{itemize}   
+
+\section{Resultados}
+% v. Resultados
+
+\subsection{Aplicação Web}
+A seguir, temos o inicio do formulário web, todas as perguntas estão disponíveis em https://desafio-hospital-new.vercel.app/. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{pagina_web.jpeg}
+    \caption{Inicio do Formulário Web}
+    \label{fig:pagina}
+\end{figure}
+
+\subsection{Dashboards}
+Foram construídos gráficos com Power bi que proporcionam uma visão geral da estrutura e situação do hospital. Na figura 2 temos uma análise do tempo de esperada dos pacientes, comparado ao tempo de atendimento. Na figura 3 temos uma visão geral das chegadas de pacientes, tanto pelo pronto socorro, quanto via ambulância e sua classificação segundo o sistema de Manchester. 
+
+Na figura 4, foi construído um simulador que calcula em tempo real o fator de utilização e a liberação diária de leitos, a fim de compará-la com a demanda. Assim, permite compreender, visualizar e simular em tempo real a utilização deste recurso fundamental. Ele utiliza as fórmulas clássicas: 
+\begin{equation}
+    \text{Fator de Utilização} = \frac{\text{Pacientes-Dia} \times \text{Tempo Médio de Permanência}}{\text{Leitos Disponíveis}}
+\end{equation}
+\begin{equation}
+    \text{Liberação de Leitos} = \frac{\text{Leitos Disponíveis}}{\text{Tempo Médio de Permanência}}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{los.jpeg}
+    \caption{Tempo de Espera vs Tempo de Atendimento}
+    \label{fig:dashboard_los}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{classificacao.png}
+    \caption{Classificação dos pacientes - Sistema de Manchester}
+    \label{fig:dashboard_classificacao}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{simulador.jpeg}
+    \caption{Simulador do Fator de utilização}
+    \label{fig:dashboard_simulador}
+\end{figure}
+
+\section{Oportunidades para Pesquisas Futuras}
+
+Este trabalho construiu uma versão inicial de suporte à decisão no ambiente hospitalar, demonstrando a viabilidade de integrar coleta de dados distribuída com visualização gerencial. No entanto, visando a escalabilidade e a sustentabilidade econômica da solução a longo prazo, sugere-se a substituição das ferramentas proprietárias de \textit{Business Intelligence} por alternativas de código aberto, com destaque para a migração do Power BI para o Metabase. Essa transição eliminaria os custos de licenciamento por usuário, democratizando o acesso aos dados para todos os níveis hierárquicos da instituição sem onerar o orçamento operacional. Além disso, o uso de uma ferramenta \textit{open source} facilitaria a integração técnica nativa (\textit{embedding}) dos painéis diretamente na aplicação web desenvolvida, aproveitando a compatibilidade otimizada com o banco de dados PostgreSQL utilizado no Supabase e permitindo consultas mais flexíveis.
+
+Paralelamente à evolução da infraestrutura tecnológica, existe um vasto campo para o aprofundamento da modelagem empregada, especialmente com dados reais disponíveis. A atual abordagem de cenários determinísticos deve evoluir, utilizando métodos de Teoria das Filas para capturar a variabilidade inerente aos processos de saúde, como flutuações nas taxas de chegada e incertezas nos tempos de tratamento. Ademais, a incorporação de algoritmos de \textit{Machine Learning} sobre a base histórica consolidada possibilitaria a transição de uma análise puramente descritiva para modelos preditivos de demanda, permitindo antecipar gargalos operacionais e otimizar o dimensionamento de escalas e leitos de forma proativa e automatizada.
+
+\section{Conclusão}
+O desenvolvimento do sistema apresentado neste trabalho demonstrou a viabilidade técnica e conceitual de integrar a coleta estruturada de dados hospitalares a ferramentas de visualização e análise gerencial, mesmo em um contexto acadêmico e com recursos computacionais limitados. A arquitetura adotada, baseada em tecnologias web modernas e serviços em nuvem de baixo custo, permitiu centralizar informações operacionais antes dispersas, viabilizando uma visão mais integrada do funcionamento hospitalar.
+
+A partir da consolidação dos dados em um banco relacional e da construção de painéis de indicadores, foi possível acompanhar métricas relevantes para a gestão, como tempo médio de espera, taxa de ocupação de leitos e fator de utilização. Adicionalmente, a implementação de um simulador operacional possibilitou a análise de cenários hipotéticos, oferecendo suporte à tomada de decisão ao permitir a avaliação do impacto da demanda e do tempo médio de permanência sobre a disponibilidade de leitos.
+
+Os resultados obtidos evidenciam que soluções digitais relativamente simples podem contribuir de forma significativa para o entendimento de gargalos operacionais e para o planejamento de recursos em ambientes hospitalares. Embora o sistema ainda não incorpore modelos estocásticos avançados ou algoritmos preditivos, ele estabelece uma base sólida para evoluções futuras, tanto do ponto de vista tecnológico quanto analítico.
+
+Por fim, conclui-se que o projeto cumpre seu objetivo de servir como uma ferramenta inicial de apoio à gestão hospitalar, ao mesmo tempo em que abre espaço para pesquisas futuras mais aprofundadas, incluindo a incorporação de modelos matemáticos mais sofisticados, técnicas de aprendizado de máquina e a adoção de soluções de \textit{Business Intelligence} totalmente integradas à aplicação web. Dessa forma, o trabalho reforça a importância da tecnologia da informação como elemento estratégico para a melhoria da eficiência e da qualidade dos serviços de saúde.
+
+
+\section{Bibliografia}
+% viii. Bibliografia
+\begin{thebibliography}{9}
+    \bibitem{kimball}
+    KIMBALL, Ralph. \textit{The Data Warehouse Toolkit}. Wiley, 2013.
+    \bibitem{react}
+    DOCUMENTAÇÃO REACT. Disponível em: https://react.dev. Acesso em: 2025.
+\end{thebibliography}
+
+\end{document}
